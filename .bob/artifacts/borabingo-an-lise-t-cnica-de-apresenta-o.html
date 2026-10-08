@@ -1,0 +1,570 @@
+
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>BoraBingo – Análise Técnica</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #f7f8fa;
+    color: #1f2328;
+  }
+  .page { max-width: 820px; margin: 0 auto; padding: 32px 20px 48px; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 32px 24px 28px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 28px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; color: #1f2328; letter-spacing: -0.4px; }
+  .header .sub { color: #57606a; font-size: 13px; margin-top: 6px; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+  .badge {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    border: 1px solid;
+  }
+  .badge-green  { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+  .badge-yellow { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+  .badge-red    { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+
+  /* SECTION */
+  .section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  .section-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+    background: #3b82d4; color: #fff;
+  }
+  .section-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .status-chip {
+    font-size: 11px; font-weight: 700; padding: 2px 10px;
+    border-radius: 12px; border: 1px solid;
+  }
+  .ok    { background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .warn  { background:#fef9c3; color:#854d0e; border-color:#fde68a; }
+  .issue { background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+
+  .section-body { padding: 16px 18px; }
+
+  /* GRID */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media(max-width:600px){ .grid2,.grid3{ grid-template-columns:1fr; } }
+
+  /* CARD */
+  .card {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .card h4 { font-size: 12px; font-weight: 600; color: #57606a; text-transform: uppercase;
+             letter-spacing: .4px; margin-bottom: 6px; }
+  .card p, .card li { font-size: 13px; color: #1f2328; }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 3px; }
+
+  /* CODE */
+  code {
+    background: #f0f0f0; padding: 1px 5px; border-radius: 4px;
+    font-size: 12px; font-family: "SF Mono", "Fira Code", monospace; color: #c7254e;
+  }
+  .code-block {
+    background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+    padding: 12px 14px; font-family: "SF Mono","Fira Code",monospace;
+    font-size: 11.5px; line-height: 1.6; overflow-x: auto; margin-top: 8px;
+  }
+  .c-comment { color: #6c7086; }
+  .c-key     { color: #89b4fa; }
+  .c-str     { color: #a6e3a1; }
+  .c-ann     { color: #f38ba8; }
+  .c-kw      { color: #cba6f7; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+  th { background: #f7f8fa; color: #57606a; font-weight: 600; text-align: left;
+       padding: 7px 10px; border-bottom: 1px solid #e5e7eb; font-size: 11px; text-transform:uppercase; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+
+  /* FLOW */
+  .flow {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+    font-size: 12px; margin-top: 8px;
+  }
+  .flow-box {
+    background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;
+    border-radius: 6px; padding: 5px 10px; font-weight: 600; white-space: nowrap;
+  }
+  .flow-box.pub { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+  .flow-box.sub { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+  .flow-box.db  { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+  .flow-box.err { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+  .arrow { padding: 0 6px; color: #57606a; font-size: 14px; }
+
+  /* NOTICE */
+  .notice {
+    border-left: 3px solid; padding: 8px 12px; border-radius: 0 6px 6px 0;
+    font-size: 12.5px; margin-top: 10px;
+  }
+  .notice-warn  { background:#fefce8; border-color:#eab308; color:#713f12; }
+  .notice-ok    { background:#f0fdf4; border-color:#22c55e; color:#14532d; }
+  .notice-info  { background:#eff6ff; border-color:#3b82f6; color:#1e3a5f; }
+  .notice-red   { background:#fff1f2; border-color:#f43f5e; color:#881337; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; padding: 0; margin-top: 8px; }
+  .checklist li { padding: 4px 0; font-size: 13px; display: flex; align-items: flex-start; gap: 8px; }
+  .checklist li::before { flex-shrink: 0; margin-top: 1px; }
+  .check-ok::before   { content: "✓"; color: #16a34a; font-weight: 700; }
+  .check-warn::before { content: "⚠"; color: #ca8a04; font-weight: 700; }
+  .check-fail::before { content: "✗"; color: #dc2626; font-weight: 700; }
+
+  .divider { height: 1px; background: #e5e7eb; margin: 12px 0; }
+  .muted { color: #57606a; font-size: 12px; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid #e5e7eb; color: #57606a; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <h1>🎱 BoraBingo — Análise Técnica para Apresentação</h1>
+    <p class="sub">Microserviços Spring Boot · MongoDB ReplicaSet · RabbitMQ · JWT Cookie · React Native Web</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">auth-service :8081</span>
+      <span class="badge badge-blue">bingo-sala-service :8082</span>
+      <span class="badge badge-blue">cartela-service :8083</span>
+      <span class="badge badge-blue">gateway-service :8080</span>
+      <span class="badge badge-green">MongoDB rs0</span>
+      <span class="badge badge-green">RabbitMQ :5672</span>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Cookies e Autenticação</div>
+      <span class="status-chip warn">ATENÇÃO — token também no body</span>
+    </div>
+    <div class="section-body">
+      <div class="grid2">
+        <div class="card">
+          <h4>✅ O que está correto</h4>
+          <ul>
+            <li><code>ResponseCookie</code> com <code>httpOnly(true)</code></li>
+            <li><code>sameSite("Lax")</code> configurado</li>
+            <li><code>maxAge(86400)</code> = 24h de expiração</li>
+            <li><code>path("/")</code> — escopo global</li>
+            <li>Logout apaga o cookie com <code>maxAge(0)</code></li>
+            <li>Gateway lê o token <strong>exclusivamente do cookie</strong> primeiro</li>
+            <li><code>withCredentials: true</code> no frontend (Axios)</li>
+            <li>CORS com <code>allowCredentials(true)</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>⚠️ Ponto de atenção</h4>
+          <ul>
+            <li>O endpoint <code>/login</code> retorna o <code>token</code> também no <strong>body JSON</strong></li>
+            <li>O frontend <strong>não armazena</strong> em localStorage, apenas usa o cookie</li>
+            <li><code>secure(false)</code> — correto para localhost; em produção deve ser <code>true</code></li>
+            <li>Fallback <code>Authorization: Bearer</code> no Gateway — necessário para K6</li>
+          </ul>
+          <div class="notice notice-warn">
+            <strong>Para a apresentação:</strong> Mostre no DevTools → Application → Cookies o cookie <code>bingo_auth_token</code>. Confirme que <strong>nada aparece em localStorage</strong>.
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+<span class="c-ann">// AuthController.java — login()</span>
+<span class="c-kw">ResponseCookie</span> cookie = ResponseCookie.from(<span class="c-str">"bingo_auth_token"</span>, token)
+    .httpOnly(<span class="c-key">true</span>)
+    .secure(<span class="c-key">false</span>)  <span class="c-comment">// false em dev, true em produção HTTPS</span>
+    .path(<span class="c-str">"/"</span>)
+    .maxAge(<span class="c-key">86400</span>)  <span class="c-comment">// 24 horas</span>
+    .sameSite(<span class="c-str">"Lax"</span>)
+    .build();
+response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Transações com MongoDB</div>
+      <span class="status-chip ok">ATENDIDO</span>
+    </div>
+    <div class="section-body">
+      <div class="grid3">
+        <div class="card">
+          <h4>ReplicaSet configurado</h4>
+          <p>Todos os serviços apontam para <code>mongodb://localhost:27017/bingo_db?replicaSet=rs0</code>. O <code>docker-compose.yml</code> inicia o <code>rs.initiate()</code> automaticamente.</p>
+        </div>
+        <div class="card">
+          <h4>MongoTransactionManager</h4>
+          <p>Bean declarado em <code>SecurityConfig</code>, <code>RabbitAndMongoConfig</code> e <code>CartelaRabbitAndMongoConfig</code>. Habilita o suporte a <code>@Transactional</code>.</p>
+        </div>
+        <div class="card">
+          <h4>@Transactional nos serviços</h4>
+          <p>Aplicado em: <code>UserService.register()</code>, <code>SalaService.criarSala()</code>, <code>SalaService.iniciarJogo()</code>, <code>SalaService.sortearProximoNumero()</code>, <code>CartelaService.processarCompraFila()</code>.</p>
+        </div>
+      </div>
+      <div class="notice notice-ok" style="margin-top:12px">
+        <strong>Rollback automático:</strong> O <code>processarCompraFila()</code> usa bloco <code>try/catch</code> — em caso de falha, chama <code>rejeitarCartela()</code> marcando status como <code>REJEITADO</code>, garantindo que nenhuma cartela fique em estado inconsistente.
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Mensageria, Filas e Pub/Sub</div>
+      <span class="status-chip ok">ATENDIDO</span>
+    </div>
+    <div class="section-body">
+      <table>
+        <tr><th>Evento</th><th>Publisher</th><th>Exchange / Routing Key</th><th>Fila Consumidora</th></tr>
+        <tr><td><code>SALA_CRIADA</code></td><td>SalaService</td><td><code>bingo.exchange / bingo.sala.criada</code></td><td><code>bingo.sala.eventos.queue</code> (pattern: bingo.sala.*)</td></tr>
+        <tr><td><code>SALA_INICIADA</code></td><td>SalaService</td><td><code>bingo.exchange / bingo.sala.iniciada</code></td><td><code>bingo.sala.eventos.queue</code></td></tr>
+        <tr><td><code>NUMERO_SORTEADO</code></td><td>SalaService</td><td><code>bingo.exchange / bingo.numero.sorteado</code></td><td><code>bingo.sorteio.eventos.queue</code> (pattern: bingo.numero.*)</td></tr>
+        <tr><td><code>BINGO_FINALIZADO</code></td><td>SalaService</td><td><code>bingo.exchange / bingo.finalizado</code></td><td><code>bingo.sala.eventos.queue</code></td></tr>
+        <tr><td><code>COMPRA_SOLICITADA</code></td><td>CartelaService</td><td><code>bingo.exchange / bingo.cartela.compra.solicitada</code></td><td><code>bingo.compra.cartela.queue</code> → Consumer</td></tr>
+        <tr><td><code>DLQ (falha)</code></td><td>RabbitMQ (auto)</td><td><code>bingo.exchange / bingo.cartela.dlq</code></td><td><code>bingo.compra.cartela.dlq</code></td></tr>
+      </table>
+
+      <div style="margin-top:14px">
+        <strong style="font-size:12px;color:#57606a;text-transform:uppercase;letter-spacing:.4px">Fluxo de Compra Assíncrona</strong>
+        <div class="flow" style="margin-top:10px;flex-wrap:wrap;row-gap:8px">
+          <div class="flow-box">POST /cartelas/comprar</div><span class="arrow">→</span>
+          <div class="flow-box pub">CartelaService<br /><small>salva PENDENTE</small></div><span class="arrow">→</span>
+          <div class="flow-box pub">RabbitMQ Publish<br /><small>compra.solicitada</small></div><span class="arrow">→</span>
+          <div class="flow-box sub">CompraCartelaConsumer<br /><small>ackMode=MANUAL</small></div><span class="arrow">→</span>
+          <div class="flow-box">processarCompraFila()<br /><small>@Transactional</small></div>
+        </div>
+        <div class="flow" style="margin-top:8px;flex-wrap:wrap;row-gap:8px">
+          <div class="flow-box">Valida sala + vagas</div><span class="arrow">→</span>
+          <div class="flow-box db">Status CONFIRMADO<br /><small>+ gera matriz 5x5</small></div>
+          <span class="arrow" style="color:#ca8a04">ou</span>
+          <div class="flow-box err">Status REJEITADO<br /><small>+ motivo</small></div><span class="arrow">→</span>
+          <div class="flow-box sub">channel.basicAck(tag)<br /><small>ou basicNack→DLQ</small></div>
+        </div>
+      </div>
+
+      <div class="notice notice-info" style="margin-top:10px">
+        <strong>Consumer com ACK Manual:</strong> <code>CompraCartelaConsumer</code> usa <code>ackMode="MANUAL"</code>. Só confirma (<code>basicAck</code>) após processamento bem-sucedido. Falhas irrecuperáveis enviam <code>basicNack(requeue=false)</code> → Dead Letter Queue, prevenindo duplicidade e loop infinito.
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title">Controle de Status das Mensagens</div>
+      <span class="status-chip ok">ATENDIDO</span>
+    </div>
+    <div class="section-body">
+      <div class="grid2">
+        <div class="card">
+          <h4>Ciclo de vida — StatusCompra (Cartela)</h4>
+          <div class="flow" style="margin-top:8px;flex-direction:column;align-items:flex-start;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box" style="background:#fef9c3;color:#854d0e;border-color:#fde68a;font-size:11px">PENDENTE</div>
+              <span class="muted">← <code>solicitarCompraCartela()</code> — nunca nulo</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box" style="background:#dbeafe;color:#1e40af;border-color:#bfdbfe;font-size:11px">PROCESSANDO</div>
+              <span class="muted">← <code>processarCompraFila()</code> — consumer ativo</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box db" style="font-size:11px">CONFIRMADO</div>
+              <span class="muted">← validações OK + matriz gerada</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box err" style="font-size:11px">REJEITADO</div>
+              <span class="muted">← <code>rejeitarCartela()</code> + motivo gravado</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Ciclo de vida — StatusSala (Sala)</h4>
+          <div class="flow" style="margin-top:8px;flex-direction:column;align-items:flex-start;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box" style="font-size:11px;background:#fef9c3;color:#854d0e;border-color:#fde68a">CRIADA</div>
+              <span class="muted">← <code>criarSala()</code> — status inicial</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box" style="font-size:11px;background:#dbeafe;color:#1e40af;border-color:#bfdbfe">EM_ANDAMENTO</div>
+              <span class="muted">← <code>iniciarJogo()</code> — só se CRIADA</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box db" style="font-size:11px">FINALIZADA</div>
+              <span class="muted">← <code>finalizarBingo()</code> + vencedor</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="flow-box err" style="font-size:11px">CANCELADA</div>
+              <span class="muted">← enum disponível (não implementado via API)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notice notice-ok" style="margin-top:10px">
+        <strong>Sem status nulo:</strong> A primeira linha do <code>solicitarCompraCartela()</code> é <code>.status(StatusCompra.PENDENTE)</code> — obrigatório no builder. A transição é sempre explícita; em caso de exceção, o catch garante que a cartela vai para <code>REJEITADO</code> com motivo registrado.
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">Testes de Carga e Concorrência com K6</div>
+      <span class="status-chip ok">ATENDIDO</span>
+    </div>
+    <div class="section-body">
+      <div class="grid2">
+        <div class="card">
+          <h4>Configuração do script</h4>
+          <ul>
+            <li><strong>30 usuários simultâneos</strong> disputando <strong>20 vagas</strong></li>
+            <li>Executor: <code>shared-iterations</code></li>
+            <li>Polling no <code>GET /api/cartelas/{id}</code> até status final</li>
+            <li>Timeout: 25 tentativas × 0.4s = 10s por usuário</li>
+            <li>Métricas customizadas: confirmadas, rejeitadas, timeouts, erros</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>O que o teardown valida</h4>
+          <ul>
+            <li><code>GET /api/salas/{id}</code> consulta <code>cartelasVendidas</code></li>
+            <li>Confirma que <strong>não ultrapassou</strong> <code>maxCartelas</code></li>
+            <li>Imprime relatório no console: confirmadas vs rejeitadas vs timeout</li>
+            <li>Saída de erro crítico se houver overbooking</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="code-block" style="margin-top:12px">
+<span class="c-comment">## Como executar o teste de concorrência</span>
+<span class="c-comment"># Pré-requisito: k6 instalado (brew install k6)</span>
+
+<span class="c-comment"># Execução simples (cria sala automaticamente via setup)</span>
+k6 run k6-test-concorrencia.js
+
+<span class="c-comment"># Execução com parâmetros customizados</span>
+k6 run -e MAX_CARTELAS=10 -e QTD_REQUISICOES=25 k6-test-concorrencia.js
+
+<span class="c-comment"># Resultado esperado na tela:</span>
+<span class="c-comment"># bingo_cartelas_confirmadas: 20  (= maxCartelas)</span>
+<span class="c-comment"># bingo_cartelas_rejeitadas:  10  (= 30 - 20)</span>
+<span class="c-comment"># bingo_timeout_polling:       0</span>
+      </div>
+
+      <div class="notice notice-info" style="margin-top:10px">
+        <strong>Concorrência de escrita:</strong> O script bypassa o Gateway (aponta direto para <code>:8082</code> e <code>:8083</code>) e usa headers <code>X-Auth-*</code> diretamente. Isso simula a carga interna real. A proteção contra overbooking é garantida pela fila RabbitMQ + <code>@Transactional</code> no consumer.
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div class="section-title">Controle de Acesso: Administrador e Usuário Comum</div>
+      <span class="status-chip warn">PARCIALMENTE — só no Gateway</span>
+    </div>
+    <div class="section-body">
+      <table>
+        <tr><th>Rota</th><th>Perfil Necessário</th><th>Onde é Bloqueado</th><th>Status</th></tr>
+        <tr><td><code>POST /api/salas/admin</code></td><td>ROLE_ADMIN</td><td>Gateway Filter</td><td><span class="status-chip ok">OK</span></td></tr>
+        <tr><td><code>POST /api/salas/admin/{id}/iniciar</code></td><td>ROLE_ADMIN</td><td>Gateway Filter</td><td><span class="status-chip ok">OK</span></td></tr>
+        <tr><td><code>POST /api/salas/admin/{id}/sortear</code></td><td>ROLE_ADMIN</td><td>Gateway Filter</td><td><span class="status-chip ok">OK</span></td></tr>
+        <tr><td><code>GET /api/salas</code></td><td>Autenticado</td><td>Gateway (verifica cookie)</td><td><span class="status-chip ok">OK</span></td></tr>
+        <tr><td><code>POST /api/cartelas/comprar</code></td><td>Autenticado</td><td>Gateway</td><td><span class="status-chip ok">OK</span></td></tr>
+        <tr><td><code>POST /api/auth/login</code></td><td>Público</td><td>Gateway whitelist</td><td><span class="status-chip ok">OK</span></td></tr>
+      </table>
+
+      <div class="code-block" style="margin-top:12px">
+<span class="c-comment">// AuthenticationGlobalFilter.java — verificação de admin</span>
+<span class="c-kw">boolean</span> isAdmin = <span class="c-str">"ADMIN"</span>.equalsIgnoreCase(role) || <span class="c-str">"ROLE_ADMIN"</span>.equalsIgnoreCase(role);
+<span class="c-kw">if</span> (path.startsWith(<span class="c-str">"/api/salas/admin"</span>) &amp;&amp; !isAdmin) {
+    <span class="c-kw">return</span> onError(exchange, <span class="c-str">"Acesso negado: Perfil de Administrador obrigatório"</span>, HttpStatus.FORBIDDEN);
+}
+      </div>
+
+      <div class="notice notice-warn" style="margin-top:10px">
+        <strong>Ponto a destacar ao professor:</strong> A verificação de autorização é feita no <strong>Gateway</strong> (backend), antes de chegar aos microsserviços. O frontend apenas esconde botões de admin na UI — a proteção real é no <code>AuthenticationGlobalFilter</code>. O microsserviço <code>bingo-sala-service</code> não possui Spring Security interno — confia nos headers <code>X-Auth-*</code> propagados pelo Gateway.
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <div class="section-title">Organização e Arquitetura do Projeto</div>
+      <span class="status-chip ok">ATENDIDO</span>
+    </div>
+    <div class="section-body">
+      <div class="grid2">
+        <div class="card">
+          <h4>Estrutura por módulo</h4>
+          <ul>
+            <li><strong>auth-service</strong> — config, controller, dto, model, repository, service</li>
+            <li><strong>bingo-sala-service</strong> — config, controller, dto, model, repository, service</li>
+            <li><strong>cartela-service</strong> — config, consumer, controller, dto, model, repository, service</li>
+            <li><strong>gateway-service</strong> — config (CORS), filter (AuthFilter)</li>
+            <li><strong>frontend</strong> — App.js + src/services/api.js</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Responsabilidades definidas</h4>
+          <ul>
+            <li><code>Controllers</code> — HTTP, validação de entrada</li>
+            <li><code>Services</code> — lógica de negócio, @Transactional</li>
+            <li><code>Repositories</code> — acesso ao MongoDB (Spring Data)</li>
+            <li><code>DTOs</code> — contratos de entrada/saída (sem expor entidades)</li>
+            <li><code>Models</code> — entidades MongoDB (com @Document)</li>
+            <li><code>Consumer</code> — só no cartela-service (consome RabbitMQ)</li>
+            <li><code>Config</code> — Rabbit, Mongo, Security, CORS separados</li>
+          </ul>
+        </div>
+      </div>
+      <div class="notice notice-info" style="margin-top:10px">
+        <strong>Sem duplicação problemática:</strong> Cada serviço tem suas próprias entidades e DTOs. A comunicação entre serviços é feita via mensagem (RabbitMQ) ou REST interno (<code>RestTemplate</code>), não por objetos compartilhados.
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <div class="section-title">APIs e Fluxo das Operações</div>
+      <span class="status-chip ok">ATENDIDO</span>
+    </div>
+    <div class="section-body">
+      <table>
+        <tr><th>Endpoint</th><th>Método</th><th>Fluxo</th><th>Evento Publicado</th></tr>
+        <tr><td><code>/api/auth/register</code></td><td>POST</td><td>Controller → UserService.register() → UserRepository → MongoDB</td><td>—</td></tr>
+        <tr><td><code>/api/auth/login</code></td><td>POST</td><td>Controller → UserService.login() → JWT → Set-Cookie</td><td>—</td></tr>
+        <tr><td><code>/api/auth/logout</code></td><td>POST</td><td>Controller → apaga cookie (maxAge=0)</td><td>—</td></tr>
+        <tr><td><code>/api/auth/me</code></td><td>GET</td><td>Controller → UserService.getProfile(X-Auth-Username)</td><td>—</td></tr>
+        <tr><td><code>/api/salas/admin</code></td><td>POST</td><td>SalaController → SalaService.criarSala() → MongoDB</td><td>SALA_CRIADA → RabbitMQ</td></tr>
+        <tr><td><code>/api/salas/admin/{id}/iniciar</code></td><td>POST</td><td>SalaController → SalaService.iniciarJogo()</td><td>SALA_INICIADA → RabbitMQ</td></tr>
+        <tr><td><code>/api/salas/admin/{id}/sortear</code></td><td>POST</td><td>SalaController → SalaService.sortearProximoNumero()</td><td>NUMERO_SORTEADO → RabbitMQ</td></tr>
+        <tr><td><code>/api/salas</code></td><td>GET</td><td>SalaController → SalaService.listarSalas() → MongoDB</td><td>—</td></tr>
+        <tr><td><code>/api/cartelas/comprar</code></td><td>POST</td><td>CartelaController → CartelaService.solicitar() → MongoDB + RabbitMQ</td><td>COMPRA_SOLICITADA</td></tr>
+        <tr><td><code>/api/cartelas/{id}</code></td><td>GET</td><td>CartelaController → CartelaService.obterCartela() [polling de status]</td><td>—</td></tr>
+        <tr><td><code>/api/cartelas/{id}/marcar</code></td><td>POST</td><td>CartelaController → CartelaService.marcarNumero() → @Transactional</td><td>—</td></tr>
+        <tr><td><code>/api/cartelas/{id}/validar-bingo</code></td><td>POST</td><td>CartelaController → CartelaService.validarBingo() → REST call → SalaService.finalizarBingo()</td><td>BINGO_FINALIZADO</td></tr>
+      </table>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <div class="section-title">Demonstração do Frontend</div>
+      <span class="status-chip ok">FLUXOS COMPLETOS</span>
+    </div>
+    <div class="section-body">
+      <div class="grid2">
+        <div class="card">
+          <h4>Fluxo do Usuário Comum (ROLE_USER)</h4>
+          <ol style="padding-left:16px;font-size:13px">
+            <li>Cadastro via aba <em>Cadastrar</em> (ROLE_USER)</li>
+            <li>Login → cookie <code>bingo_auth_token</code> gravado</li>
+            <li>Listagem de salas disponíveis</li>
+            <li>Entrar em uma sala com status <strong>CRIADA</strong></li>
+            <li>Comprar cartela (async) → polling → CONFIRMADA</li>
+            <li>Marcar números conforme sorteio</li>
+            <li>Bater Bingo → validação automática via API</li>
+            <li>Logout → cookie apagado</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h4>Fluxo do Administrador (ROLE_ADMIN)</h4>
+          <ol style="padding-left:16px;font-size:13px">
+            <li>Cadastro com <code>role: ROLE_ADMIN</code></li>
+            <li>Login → mesmo fluxo de cookie</li>
+            <li>Painel admin visível: criar sala, nome, preço, max cartelas</li>
+            <li>Criar sala → aparece na lista com status <strong>CRIADA</strong></li>
+            <li>Iniciar Jogo → status → <strong>EM_ANDAMENTO</strong></li>
+            <li>Sortear Número → a cada clique sorteia 1 número (1–75)</li>
+            <li>Visualiza números sorteados em tempo real</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="notice notice-info" style="margin-top:12px">
+        <strong>Persistência de sessão:</strong> Ao recarregar a página, o App.js chama <code>GET /api/auth/me</code> via <code>checkSession()</code> — se o cookie ainda for válido, o usuário é recuperado automaticamente sem necessidade de novo login.
+      </div>
+
+      <ul class="checklist" style="margin-top:12px">
+        <li class="check-ok">Login/logout com cookie HttpOnly — sem localStorage</li>
+        <li class="check-ok">Sessão persistente via cookie + <code>/auth/me</code></li>
+        <li class="check-ok">Botões admin ocultos para ROLE_USER (UI)</li>
+        <li class="check-ok">403 Forbidden retornado pelo backend para acesso não autorizado</li>
+        <li class="check-ok">Polling assíncrono de status de cartela (PENDENTE → CONFIRMADO/REJEITADO)</li>
+        <li class="check-ok">Integração completa com todas as APIs via Axios + <code>withCredentials</code></li>
+        <li class="check-warn">Frontend React Native Web (não mobile nativo) — rode com <code>npm start</code> no navegador</li>
+      </ul>
+    </div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-header" style="background:#f7f8fa">
+      <div class="section-num" style="background:#57606a">✓</div>
+      <div class="section-title">Resumo Geral — Status dos Critérios</div>
+    </div>
+    <div class="section-body">
+      <table>
+        <tr><th>#</th><th>Critério</th><th>Status</th><th>Observação</th></tr>
+        <tr><td>1</td><td>Cookies e Autenticação</td><td><span class="status-chip warn">⚠ Atenção</span></td><td>Cookie correto; token também no body JSON — remover para produção</td></tr>
+        <tr><td>2</td><td>Transações MongoDB</td><td><span class="status-chip ok">✓ OK</span></td><td>@Transactional + MongoTransactionManager + ReplicaSet configurado</td></tr>
+        <tr><td>3</td><td>Mensageria / Pub-Sub</td><td><span class="status-chip ok">✓ OK</span></td><td>Publisher (SalaService, CartelaService) + Consumer com ACK Manual + DLQ</td></tr>
+        <tr><td>4</td><td>Controle de Status</td><td><span class="status-chip ok">✓ OK</span></td><td>Status obrigatório na criação, transições explícitas, sem estado inválido</td></tr>
+        <tr><td>5</td><td>K6 Carga / Concorrência</td><td><span class="status-chip ok">✓ OK</span></td><td>Script executável, 30 VUs, métricas customizadas, validação anti-overbooking</td></tr>
+        <tr><td>6</td><td>Controle de Acesso</td><td><span class="status-chip warn">⚠ Atenção</span></td><td>Verificação no Gateway (backend); microsserviços confiam em X-Auth headers</td></tr>
+        <tr><td>7</td><td>Arquitetura / Organização</td><td><span class="status-chip ok">✓ OK</span></td><td>Separação clara, sem duplicação, responsabilidades definidas por módulo</td></tr>
+        <tr><td>8</td><td>APIs e Fluxos</td><td><span class="status-chip ok">✓ OK</span></td><td>12 endpoints mapeados, fluxos de ponta a ponta funcionais</td></tr>
+        <tr><td>9</td><td>Frontend</td><td><span class="status-chip ok">✓ OK</span></td><td>Todos os fluxos de usuário e admin operacionais, persistência de sessão</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+<div class="footer">Made with IBM Bob</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+
+        - id: bingo-sala-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/salas/**
+
+        - id: cartela-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/cartelas/**
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}

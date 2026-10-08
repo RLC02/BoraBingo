@@ -1,0 +1,29 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: cartela-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/bingo_db?replicaSet=rs0
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+bingo:
+  rabbitmq:
+    exchange: bingo.exchange
+    queue:
+      compra-cartela: bingo.compra.cartela.queue
+      compra-dlq: bingo.compra.cartela.dlq
+    routingkey:
+      compra-solicitada: bingo.cartela.compra.solicitada
+      compra-confirmada: bingo.cartela.compra.confirmada
+      compra-rejeitada: bingo.cartela.compra.rejeitada
+
+services:
+  sala-url: http://localhost:8082/api/salas
+  auth-url: http://localhost:8081/api/auth

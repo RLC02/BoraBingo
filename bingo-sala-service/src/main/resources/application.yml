@@ -1,0 +1,26 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: bingo-sala-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/bingo_db?replicaSet=rs0
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+bingo:
+  rabbitmq:
+    exchange: bingo.exchange
+    queue:
+      sala-eventos: bingo.sala.eventos.queue
+      sorteio-eventos: bingo.sorteio.eventos.queue
+    routingkey:
+      sala-criada: bingo.sala.criada
+      sala-iniciada: bingo.sala.iniciada
+      numero-sorteado: bingo.numero.sorteado
+      bingo-finalizado: bingo.finalizado

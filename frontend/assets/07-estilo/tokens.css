@@ -1,0 +1,15 @@
+/* BoraBingo — tokens da identidade visual */
+:root {
+  --bora-purple: #6541D9;
+  --bora-ink: #221B3D;
+  --bora-lime: #D8F36A;
+  --bora-cream: #FBF8F1;
+  --bora-lilac: #BAA5F5;
+  --bora-muted: #706780;
+  --bora-line: #E5DEF1;
+  --bora-tile: #F2EEF9;
+  --bora-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --bora-radius-sm: 12px;
+  --bora-radius-md: 20px;
+  --bora-radius-lg: 32px;
+}

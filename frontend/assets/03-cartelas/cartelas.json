@@ -1,0 +1,549 @@
+{
+  "modalidade": "bingo-75",
+  "indices": "linha e coluna a partir de zero",
+  "intervalos": {
+    "B": [
+      1,
+      15
+    ],
+    "I": [
+      16,
+      30
+    ],
+    "N": [
+      31,
+      45
+    ],
+    "G": [
+      46,
+      60
+    ],
+    "O": [
+      61,
+      75
+    ]
+  },
+  "cartelas": [
+    {
+      "id": "0001",
+      "colunas": [
+        "B",
+        "I",
+        "N",
+        "G",
+        "O"
+      ],
+      "numeros": [
+        [
+          7,
+          22,
+          38,
+          54,
+          69
+        ],
+        [
+          2,
+          18,
+          31,
+          47,
+          62
+        ],
+        [
+          15,
+          29,
+          null,
+          59,
+          75
+        ],
+        [
+          10,
+          25,
+          44,
+          51,
+          66
+        ],
+        [
+          4,
+          16,
+          35,
+          56,
+          71
+        ]
+      ],
+      "livre": {
+        "linha": 2,
+        "coluna": 2
+      }
+    },
+    {
+      "id": "0002",
+      "colunas": [
+        "B",
+        "I",
+        "N",
+        "G",
+        "O"
+      ],
+      "numeros": [
+        [
+          12,
+          28,
+          34,
+          50,
+          69
+        ],
+        [
+          5,
+          24,
+          38,
+          48,
+          67
+        ],
+        [
+          8,
+          25,
+          null,
+          55,
+          61
+        ],
+        [
+          2,
+          19,
+          43,
+          47,
+          66
+        ],
+        [
+          15,
+          29,
+          31,
+          59,
+          74
+        ]
+      ],
+      "livre": {
+        "linha": 2,
+        "coluna": 2
+      }
+    },
+    {
+      "id": "0003",
+      "colunas": [
+        "B",
+        "I",
+        "N",
+        "G",
+        "O"
+      ],
+      "numeros": [
+        [
+          13,
+          16,
+          44,
+          50,
+          74
+        ],
+        [
+          15,
+          28,
+          38,
+          49,
+          68
+        ],
+        [
+          14,
+          20,
+          null,
+          57,
+          63
+        ],
+        [
+          2,
+          19,
+          37,
+          55,
+          72
+        ],
+        [
+          3,
+          29,
+          32,
+          48,
+          71
+        ]
+      ],
+      "livre": {
+        "linha": 2,
+        "coluna": 2
+      }
+    },
+    {
+      "id": "0004",
+      "colunas": [
+        "B",
+        "I",
+        "N",
+        "G",
+        "O"
+      ],
+      "numeros": [
+        [
+          1,
+          19,
+          31,
+          51,
+          63
+        ],
+        [
+          6,
+          22,
+          39,
+          52,
+          70
+        ],
+        [
+          3,
+          17,
+          null,
+          48,
+          65
+        ],
+        [
+          8,
+          21,
+          34,
+          50,
+          64
+        ],
+        [
+          11,
+          28,
+          44,
+          57,
+          75
+        ]
+      ],
+      "livre": {
+        "linha": 2,
+        "coluna": 2
+      }
+    },
+    {
+      "id": "0005",
+      "colunas": [
+        "B",
+        "I",
+        "N",
+        "G",
+        "O"
+      ],
+      "numeros": [
+        [
+          14,
+          20,
+          36,
+          51,
+          62
+        ],
+        [
+          10,
+          29,
+          38,
+          46,
+          71
+        ],
+        [
+          6,
+          22,
+          null,
+          47,
+          72
+        ],
+        [
+          12,
+          28,
+          33,
+          57,
+          74
+        ],
+        [
+          15,
+          18,
+          42,
+          49,
+          67
+        ]
+      ],
+      "livre": {
+        "linha": 2,
+        "coluna": 2
+      }
+    },
+    {
+      "id": "0006",
+      "colunas": [
+        "B",
+        "I",
+        "N",
+        "G",
+        "O"
+      ],
+      "numeros": [
+        [
+          13,
+          26,
+          39,
+          52,
+          73
+        ],
+        [
+          5,
+          22,
+          42,
+          56,
+          65
+        ],
+        [
+          1,
+          23,
+          null,
+          47,
+          66
+        ],
+        [
+          14,
+          20,
+          44,
+          58,
+          63
+        ],
+        [
+          12,
+          19,
+          31,
+          53,
+          69
+        ]
+      ],
+      "livre": {
+        "linha": 2,
+        "coluna": 2
+      }
+    }
+  ],
+  "variantes": [
+    {
+      "arquivo": "cartela-0001",
+      "estado": "pronta",
+      "cartela_id": "0001",
+      "marcados": [],
+      "label": "Pronta para jogar"
+    },
+    {
+      "arquivo": "cartela-0002",
+      "estado": "pronta",
+      "cartela_id": "0002",
+      "marcados": [],
+      "label": "Pronta para jogar"
+    },
+    {
+      "arquivo": "cartela-0003",
+      "estado": "pronta",
+      "cartela_id": "0003",
+      "marcados": [],
+      "label": "Pronta para jogar"
+    },
+    {
+      "arquivo": "cartela-0004",
+      "estado": "pronta",
+      "cartela_id": "0004",
+      "marcados": [],
+      "label": "Pronta para jogar"
+    },
+    {
+      "arquivo": "cartela-0005",
+      "estado": "pronta",
+      "cartela_id": "0005",
+      "marcados": [],
+      "label": "Pronta para jogar"
+    },
+    {
+      "arquivo": "cartela-0006",
+      "estado": "pronta",
+      "cartela_id": "0006",
+      "marcados": [],
+      "label": "Pronta para jogar"
+    },
+    {
+      "arquivo": "cartela-em-jogo",
+      "estado": "em-jogo",
+      "cartela_id": "0001",
+      "marcados": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "label": "6 números marcados"
+    },
+    {
+      "arquivo": "cartela-linha-completa",
+      "estado": "linha-completa",
+      "cartela_id": "0001",
+      "marcados": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "label": "Linha completa"
+    },
+    {
+      "arquivo": "cartela-bingo",
+      "estado": "bingo",
+      "cartela_id": "0001",
+      "marcados": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "label": "BINGO! · Cartela completa"
+    },
+    {
+      "arquivo": "cartela-vazia",
+      "estado": "vazia",
+      "cartela_id": null,
+      "marcados": [],
+      "label": "Personalize os números"
+    }
+  ]
+}

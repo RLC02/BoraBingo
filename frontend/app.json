@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "bingo-frontend",
+    "slug": "bingo-frontend",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["web", "ios", "android"],
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

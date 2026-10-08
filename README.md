@@ -1,10 +1,32 @@
 <p align="center">
-  <img src="frontend/assets/01-marca/borabingo-logo.png" alt="BoraBingo Logo" width="320"/>
+  <img src="frontend/assets/01-marca/borabingo-logo.png" alt="BoraBingo" width="300"/>
 </p>
 
-# 🎰 Ecossistema de Microsserviços: Bingo Online Concorrente
+<p align="center">
+  <img src="frontend/assets/02-ilustracoes/bolas-hero.png" alt="Bolas BoraBingo" width="280"/>
+</p>
 
-Este projeto implementa uma arquitetura completa de Microsserviços para um **Jogo de Bingo Online**, contemplando Frontend Web (React Native / Expo / Tamagui), Spring Boot 3, Spring Cloud Gateway, MongoDB com Transações Réplica Set (`@Transactional`), Mensageria RabbitMQ assíncrona, Autenticação segura via `HttpOnly Cookies`, Controle de Acesso Baseado em Perfis (RBAC) e Testes de Carga / Concorrência automatizados em **K6**.
+<p align="center">
+  <strong>Ecossistema de Microsserviços · Bingo Online Concorrente</strong><br/>
+  Spring Boot 3 · MongoDB ReplicaSet · RabbitMQ · JWT Cookie · React Native Web
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java"/>
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen?style=flat-square&logo=springboot"/>
+  <img src="https://img.shields.io/badge/MongoDB-ReplicaSet-green?style=flat-square&logo=mongodb"/>
+  <img src="https://img.shields.io/badge/RabbitMQ-3.12-orange?style=flat-square&logo=rabbitmq"/>
+  <img src="https://img.shields.io/badge/React%20Native-Expo-blueviolet?style=flat-square&logo=expo"/>
+  <img src="https://img.shields.io/badge/K6-Testes%20de%20Carga-7D64FF?style=flat-square"/>
+</p>
+
+---
+
+## 🎨 Identidade Visual
+
+<p align="center">
+  <img src="frontend/assets/borabingo-preview.png" alt="BoraBingo — Kit de Identidade Visual" width="780"/>
+</p>
 
 ---
 
@@ -12,109 +34,154 @@ Este projeto implementa uma arquitetura completa de Microsserviços para um **Jo
 
 | Microsserviço | Porta | Responsabilidade |
 | :--- | :---: | :--- |
-| **API Gateway** (`gateway-service`) | `8080` | Roteamento, CORS, extração e validação do JWT via Cookies HttpOnly, autorização de rotas RBAC (`ROLE_ADMIN` vs `ROLE_USER`). |
-| **Auth Service** (`auth-service`) | `8081` | Gerenciamento de usuários, hash de senhas (BCrypt), emissão de Tokens JWT gravados estritamente em cookies `HttpOnly`, `SameSite=Lax`. |
-| **Bingo Sala Service** (`bingo-sala-service`) | `8082` | Gestão de salas de Bingo, sorteio sequencial de números (1-75), controle de capacidade de cartelas, publicação de eventos de jogo no RabbitMQ. |
-| **Cartela Service** (`cartela-service`) | `8083` | Solicitação assíncrona de compra de cartelas, Consumer de fila RabbitMQ com confirmação manual (ACK/NACK), persistência transacional MongoDB (`@Transactional`), geração de matrizes 5x5 e validação de vitória (Bingo). |
+| **API Gateway** (`gateway-service`) | `8080` | Roteamento, CORS, validação JWT via Cookies HttpOnly, RBAC (`ROLE_ADMIN` vs `ROLE_USER`). |
+| **Auth Service** (`auth-service`) | `8081` | Usuários, BCrypt, JWT em cookies `HttpOnly SameSite=Lax`, débito e crédito de saldo. |
+| **Bingo Sala Service** (`bingo-sala-service`) | `8082` | Salas, sorteio de números (1-75), controle de vagas, publicação de eventos RabbitMQ. |
+| **Cartela Service** (`cartela-service`) | `8083` | Compra assíncrona via fila, Consumer ACK/NACK manual, DLQ, geração de matriz 5×5, validação de vitória e prêmio. |
 
 ---
 
 ## 1. 🍪 Cookies e Autenticação
 
-- **Armazenamento:** O Token JWT é gravado exclusivamente nos **Cookies do navegador** (`Application > Cookies > bingo_auth_token`), com as diretivas:
-  - `HttpOnly = true` (Impede leitura maliciosa via scripts JS / XSS).
-  - `SameSite = Lax` (Protege contra ataques CSRF).
-  - `Secure = false` (Permitido para desenvolvimento local, `true` em produção HTTPS).
-  - `MaxAge = 86400` (24 horas).
-- **Sem LocalStorage:** O Frontend **não** salva tokens de sessão em `localStorage` ou `sessionStorage`.
-- **Propagação de Identidade:** O API Gateway intercepta o Cookie, valida a assinatura e injeta os headers internos (`X-Auth-Username`, `X-Auth-Role`, `X-Auth-UserId`) para os microsserviços downstream.
+- O Token JWT é gravado **exclusivamente nos Cookies** do navegador (`Application > Cookies > bingo_auth_token`):
+  - `HttpOnly = true` — impede acesso via JavaScript (proteção contra XSS).
+  - `SameSite = Lax` — proteção contra CSRF.
+  - `Secure = false` — desenvolvimento local (`true` em produção HTTPS).
+  - `MaxAge = 86400` — expira em 24 horas.
+- O Frontend **não armazena nada em localStorage**.
+- O Gateway lê o cookie, valida a assinatura HMAC-SHA256 e injeta `X-Auth-Username`, `X-Auth-Role` e `X-Auth-UserId` nos headers internos para os microsserviços downstream.
 
 ---
 
-## 2. 🗄️ Transações com MongoDB (@Transactional)
+## 2. 🗄️ Transações com MongoDB (`@Transactional`)
 
-- **Configuração:** O MongoDB está configurado em modo Replica Set (`rs0`) no [`docker-compose.yml`](docker-compose.yml:1), pré-requisito obrigatório do MongoDB para suporte a Transações Multi-Documento ACID.
-- **Spring Transaction Manager:** Cada microsserviço declara o bean [`MongoTransactionManager`](bingo-sala-service/src/main/java/br/com/fatec/bingo/sala/config/RabbitAndMongoConfig.java:27).
-- **Atomicidade & Rollback:** Métodos críticos como [`solicitarCompraCartela`](cartela-service/src/main/java/br/com/fatec/bingo/cartela/service/CartelaService.java:38) e [`processarCompraFila`](cartela-service/src/main/java/br/com/fatec/bingo/cartela/service/CartelaService.java:68) utilizam `@Transactional`. Caso ocorra qualquer exceção durante a verificação de saldo ou capacidade de vagas, o MongoDB desfaz todas as alterações de escrita automaticamente (Rollback), evitando cartelas órfãs ou estados inconsistentes.
+- MongoDB configurado em **Replica Set** (`rs0`) — pré-requisito para transações ACID multi-documento.
+- Bean `MongoTransactionManager` declarado em cada microsserviço.
+- Métodos críticos usam `@Transactional`: em caso de falha (saldo insuficiente, vaga esgotada, erro interno), o MongoDB desfaz todas as escritas automaticamente — sem cartelas órfãs ou estados inconsistentes.
 
 ---
 
 ## 3. 🐇 Mensageria, Filas e Pub/Sub (RabbitMQ)
 
-### Fluxo de Mensagens:
-1. **Compra Assíncrona de Cartelas:**
-   - **Publisher:** [`CartelaService.solicitarCompraCartela()`](cartela-service/src/main/java/br/com/fatec/bingo/cartela/service/CartelaService.java:60) publica na Exchange `bingo.exchange` com a routing key `bingo.cartela.compra.solicitada`.
-   - **Queue:** `bingo.compra.cartela.queue` (com Dead Letter Queue associada `bingo.compra.cartela.dlq`).
-   - **Consumer:** [`CompraCartelaConsumer.processarCompraCartela()`](cartela-service/src/main/java/br/com/fatec/bingo/cartela/consumer/CompraCartelaConsumer.java:23) consome as mensagens com `ackMode = MANUAL`, garantindo que o ACK só é emitido se o processamento for confirmado com êxito. Em caso de falha irrecuperável, emite `basicNack` direcionando à DLQ.
+### Fluxo de Compra Assíncrona
 
-2. **Eventos de Sala e Sorteio (Pub/Sub):**
-   - **Publisher:** [`SalaService`](bingo-sala-service/src/main/java/br/com/fatec/bingo/sala/service/SalaService.java:55) publica eventos como `bingo.sala.criada`, `bingo.sala.iniciada`, `bingo.numero.sorteado` e `bingo.sala.finalizada`.
-   - **Consumers:** Fila `bingo.sala.eventos.queue` e `bingo.sorteio.eventos.queue`.
+```
+POST /comprar → salva PENDENTE → Publish RabbitMQ → 202 ACCEPTED
+                                        ↓
+                              CompraCartelaConsumer (ackMode=MANUAL)
+                                        ↓
+                         processarCompraFila() @Transactional
+                         ├─ valida sala + vagas
+                         ├─ debita saldo (auth-service)
+                         ├─ incrementa contador (sala-service)
+                         ├─ gera matriz 5×5
+                         ├─ CONFIRMADO → basicAck
+                         └─ REJEITADO  → basicNack → Dead Letter Queue
+```
+
+### Eventos de Sala (Pub/Sub)
+
+| Evento | Routing Key | Fila |
+|:---|:---|:---|
+| `SALA_CRIADA` | `bingo.sala.criada` | `bingo.sala.eventos.queue` |
+| `SALA_INICIADA` | `bingo.sala.iniciada` | `bingo.sala.eventos.queue` |
+| `NUMERO_SORTEADO` | `bingo.numero.sorteado` | `bingo.sorteio.eventos.queue` |
+| `BINGO_FINALIZADO` | `bingo.sala.finalizada` | `bingo.sala.eventos.queue` |
+| `COMPRA_SOLICITADA` | `bingo.cartela.compra.solicitada` | `bingo.compra.cartela.queue` |
 
 ---
 
-## 4. 🔄 Ciclo de Vida e Controle de Status
+## 4. 🔄 Ciclo de Vida das Cartelas
 
-Nenhuma entidade de mensagem ou cartela possui status nulo:
-- **`PENDENTE`:** Cartela registrada no MongoDB imediatamente após a solicitação do usuário, antes de entrar na esteira da fila.
-- **`PROCESSANDO`:** O Consumer RabbitMQ retira a mensagem da fila e inicia as validações de concorrência e capacidade da sala.
-- **`CONFIRMADO`:** Validações aceitas, matriz 5x5 do bingo gerada e contagem da sala incrementada.
-- **`REJEITADO`:** Capacidade esgotada ou concorrência atingida. O motivo fica registrado em `motivoRejeicao`.
+| Status | Quando | Método |
+|:---|:---|:---|
+| `PENDENTE` | Solicitação recebida — antes da fila | `solicitarCompraCartela()` |
+| `PROCESSANDO` | Consumer iniciou validações | `processarCompraFila()` |
+| `CONFIRMADO` | Saldo debitado, matriz 5×5 gerada | `processarCompraFila()` |
+| `REJEITADO` | Sem vaga, saldo insuficiente ou erro | `rejeitarCartela()` |
 
 ---
 
 ## 5. ⚡ Testes de Carga e Concorrência com K6
 
-O script [`k6-test-concorrencia.js`](k6-test-concorrencia.js:1) simula o cenário onde **30 jogadores virtuais (VUs)** tentam comprar simultaneamente as últimas **20 cartelas disponíveis** em uma sala:
+<p align="center">
+  <img src="frontend/assets/02-ilustracoes/selo-bingo.png" alt="BINGO!" width="160"/>
+</p>
+
+O script [`k6-test-concorrencia.js`](k6-test-concorrencia.js) simula **30 jogadores simultâneos** disputando **20 vagas** na mesma sala:
 
 ```bash
-# Executando o teste K6
+# Execução padrão
 k6 run k6-test-concorrencia.js
+
+# Parâmetros customizados
+k6 run -e MAX_CARTELAS=10 -e QTD_REQUISICOES=25 k6-test-concorrencia.js
 ```
 
-### Resultados Validados:
-- **`bingo_cartelas_confirmadas`:** Exatamente **20** (limite da sala).
-- **`bingo_cartelas_rejeitadas`:** Exatamente **10** (30 - 20 = 10 rejeitadas sem erro no sistema).
-- **Consistência final no banco:** O endpoint `GET /api/salas/{id}` confirma que `cartelasVendidas == 20`, comprovando ausência total de overbooking ou concorrência descontrolada.
+**Resultados esperados:**
+
+| Métrica | Valor |
+|:---|:---|
+| `bingo_cartelas_confirmadas` | Exatamente **20** |
+| `bingo_cartelas_rejeitadas` | Exatamente **10** |
+| `bingo_timeout_polling` | **0** |
+| `cartelasVendidas` no banco | **≤ maxCartelas** (sem overbooking) |
 
 ---
 
-## 6. 🛡️ Controle de Acesso (RBAC): Admin vs Usuário Comum
+## 6. 🛡️ Controle de Acesso (RBAC)
 
-- **Regras:**
-  - `ROLE_USER`: Visualiza salas, compra cartelas, marca números e reivindica vitória (Bater Bingo).
-  - `ROLE_ADMIN`: Cria novas salas, altera limites de vagas, inicia partidas e comanda o sorteio das bolas.
-- **Proteção em Profundidade:**
-  - O [`AuthenticationGlobalFilter`](gateway-service/src/main/java/br/com/fatec/bingo/gateway/filter/AuthenticationGlobalFilter.java:59) bloqueia no backend requisições para `/api/salas/admin/**` que não contenham `ROLE_ADMIN`, retornando HTTP `403 FORBIDDEN`.
+| Perfil | Permissões |
+|:---|:---|
+| `ROLE_USER` | Visualizar salas, comprar cartelas, marcar números, bater bingo |
+| `ROLE_ADMIN` | Criar salas, iniciar partidas, sortear números + tudo do usuário |
+
+A proteção é feita no **backend** — o `AuthenticationGlobalFilter` do Gateway bloqueia requisições para `/api/salas/admin/**` sem `ROLE_ADMIN` com HTTP `403 FORBIDDEN`, independente do frontend.
 
 ---
 
-## 🚀 Como Executar o Projeto
+## 💰 Sistema de Saldo
 
-### 1. Iniciar Infraestrutura (MongoDB Replica Set & RabbitMQ):
+- Cada usuário começa com **R$ 100,00**.
+- Ao comprar uma cartela o preço é **debitado** automaticamente após confirmação.
+- Ao vencer o Bingo o prêmio (`cartelasVendidas × precoCartela`) é **creditado** instantaneamente.
+- O saldo é exibido no header e atualiza em tempo real (polling de 3s).
+
+---
+
+## 🚀 Como Executar
+
+### 1. Infraestrutura (MongoDB + RabbitMQ)
 ```bash
 docker-compose up -d
 ```
 
-### 2. Iniciar os Microsserviços Spring Boot:
+### 2. Microsserviços Spring Boot
 ```bash
-# Terminal 1 - Gateway Service
-cd gateway-service && ./mvnw spring-boot:run
-
-# Terminal 2 - Auth Service
-cd auth-service && ./mvnw spring-boot:run
-
-# Terminal 3 - Bingo Sala Service
+# Em terminais separados:
+cd gateway-service    && ./mvnw spring-boot:run
+cd auth-service       && ./mvnw spring-boot:run
 cd bingo-sala-service && ./mvnw spring-boot:run
-
-# Terminal 4 - Cartela Service
-cd cartela-service && ./mvnw spring-boot:run
+cd cartela-service    && ./mvnw spring-boot:run
 ```
 
-### 3. Iniciar o Frontend Web Expo:
+### 3. Frontend Web
 ```bash
-cd frontend
-npm install
-npm run web
+cd frontend && npm install && npm run web
+# Acesse: http://localhost:3000
 ```
-Acesse no navegador: `http://localhost:8081` (ou a porta indicada pelo Expo Web).
+
+### 4. Credenciais de teste
+
+| Perfil | Username | Senha |
+|:---|:---|:---|
+| Jogador | `jogador` | `jogador123` |
+| Administrador | `admin` | `admin123` |
+
+---
+
+<p align="center">
+  <img src="frontend/assets/01-marca/borabingo-simbolo.png" alt="BoraBingo" width="48"/>
+  <br/>
+  <sub>FATEC · Projeto de Microsserviços</sub>
+</p>

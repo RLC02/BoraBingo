@@ -1,17 +1,17 @@
 server:
-  port: 8082
+  port: ${PORT:8082}
 
 spring:
   application:
     name: bingo-sala-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/bingo_db?replicaSet=rs0&directConnection=true
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/bingo_db?replicaSet=rs0&directConnection=true}
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 bingo:
   rabbitmq:

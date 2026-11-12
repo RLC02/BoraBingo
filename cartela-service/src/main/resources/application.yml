@@ -1,17 +1,17 @@
 server:
-  port: 8083
+  port: ${PORT:8083}
 
 spring:
   application:
     name: cartela-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/bingo_db?replicaSet=rs0&directConnection=true
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/bingo_db?replicaSet=rs0&directConnection=true}
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 bingo:
   rabbitmq:
@@ -25,5 +25,5 @@ bingo:
       compra-rejeitada: bingo.cartela.compra.rejeitada
 
 services:
-  sala-url: http://localhost:8082/api/salas
-  auth-url: http://localhost:8081/api/auth
+  sala-url: ${SERVICES_SALA_URL:http://localhost:8082/api/salas}
+  auth-url: ${SERVICES_AUTH_URL:http://localhost:8081/api/auth}

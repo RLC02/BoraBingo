@@ -1,12 +1,12 @@
 server:
-  port: 8081
+  port: ${PORT:8081}
 
 spring:
   application:
     name: auth-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/bingo_db
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/bingo_db}
       auto-index-creation: true
 
 jwt:

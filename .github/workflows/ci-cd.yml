@@ -14,8 +14,8 @@ on:
 
 env:
   DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME || 'rlc02' }}
-  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN || 'dckr_pat_tjQPXj1MdL3no54UQ2y6_rCnE6o' }}
-  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY || 'rnd_EVG5VLiGYy4G1OmYMUBk3Zkotd3F' }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
 jobs:
   # =========================================================================
@@ -79,6 +79,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub (with retry)
+        if: env.DOCKER_PASSWORD != ''
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USER }}
@@ -102,7 +103,7 @@ jobs:
           build-args: |
             SERVICE=${{ matrix.service }}
           platforms: linux/amd64
-          push: true
+          push: ${{ env.DOCKER_PASSWORD != '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

@@ -1,8 +1,11 @@
 .git
 .vscode
 .DS_Store
-**/target
 frontend
 *.sh
 *.md
 k6-test-concorrencia.js
+**/target/classes
+**/target/generated-sources
+**/target/maven-archiver
+**/target/maven-status

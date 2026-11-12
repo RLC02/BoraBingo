@@ -1,29 +1,6 @@
-# Render Blueprint - Bingo Microservices
+# Render Blueprint - Bingo Auth Service
 # Documentation: https://render.com/docs/blueprint-spec
 services:
-  # -------------------------------------------------------------
-  # API GATEWAY SERVICE
-  # -------------------------------------------------------------
-  - type: web
-    name: bingo-gateway-service
-    runtime: image
-    image:
-      url: docker.io/rlc02/bingo-gateway-service:latest
-    plan: free
-    region: oregon
-    envVars:
-      - key: PORT
-        value: 8080
-      - key: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
-        value: http://bingo-auth-service:8081
-      - key: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
-        value: http://bingo-sala-service:8082
-      - key: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
-        value: http://bingo-cartela-service:8083
-
-  # -------------------------------------------------------------
-  # AUTH SERVICE
-  # -------------------------------------------------------------
   - type: web
     name: bingo-auth-service
     runtime: image
@@ -38,43 +15,3 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-
-  # -------------------------------------------------------------
-  # BINGO SALA SERVICE
-  # -------------------------------------------------------------
-  - type: web
-    name: bingo-sala-service
-    runtime: image
-    image:
-      url: docker.io/rlc02/bingo-sala-service:latest
-    plan: free
-    region: oregon
-    envVars:
-      - key: PORT
-        value: 8082
-      - key: SPRING_DATA_MONGODB_URI
-        sync: false
-      - key: SPRING_RABBITMQ_HOST
-        sync: false
-
-  # -------------------------------------------------------------
-  # CARTELA SERVICE
-  # -------------------------------------------------------------
-  - type: web
-    name: bingo-cartela-service
-    runtime: image
-    image:
-      url: docker.io/rlc02/bingo-cartela-service:latest
-    plan: free
-    region: oregon
-    envVars:
-      - key: PORT
-        value: 8083
-      - key: SPRING_DATA_MONGODB_URI
-        sync: false
-      - key: SPRING_RABBITMQ_HOST
-        sync: false
-      - key: SERVICES_SALA_URL
-        value: http://bingo-sala-service:8082/api/salas
-      - key: SERVICES_AUTH_URL
-        value: http://bingo-auth-service:8081/api/auth

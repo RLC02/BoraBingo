@@ -16,13 +16,15 @@ env:
   DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME || 'rlc02' }}
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
   RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+  SERVICE_NAME: auth-service
+  IMAGE_NAME: bingo-auth-service
 
 jobs:
   # =========================================================================
-  # 1. BUILD & TEST (Maven Multi-Module)
+  # 1. BUILD & TEST
   # =========================================================================
   build-and-test:
-    name: Build & Test Java Microservices
+    name: Build & Test Java Service
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -35,39 +37,25 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and Package with Maven
+      - name: Build Auth Service with Maven
         run: |
-          echo "Compiling and packaging all microservices..."
-          mvn -B clean package -DskipTests
+          echo "Compilando e empacotando apenas o auth-service..."
+          mvn -B clean package -pl auth-service -am -DskipTests
 
-      - name: Upload Artifacts (JARs)
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: compiled-jars
-          path: |
-            */target/*.jar
-            !*/target/*.jar.original
+          name: auth-service-jar
+          path: auth-service/target/*.jar
           retention-days: 1
 
   # =========================================================================
-  # 2. BUILD & PUSH DOCKER IMAGES (Matrix with Resilience & Retries)
+  # 2. BUILD & PUSH DOCKER IMAGE
   # =========================================================================
   build-and-push-docker:
-    name: Build & Push Docker Image (${{ matrix.service }})
+    name: Build & Push Docker Image
     needs: build-and-test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - service: gateway-service
-            image_name: bingo-gateway-service
-          - service: auth-service
-            image_name: bingo-auth-service
-          - service: bingo-sala-service
-            image_name: bingo-sala-service
-          - service: cartela-service
-            image_name: bingo-cartela-service
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -78,30 +66,29 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub (with retry)
+      - name: Log in to Docker Hub
         if: env.DOCKER_PASSWORD != ''
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_PASSWORD }}
 
-      - name: Extract metadata (tags, labels)
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.DOCKER_USER }}/${{ matrix.image_name }}
+          images: ${{ env.DOCKER_USER }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
             type=sha,format=short
-            type=ref,event=branch
 
-      - name: Build and Push Docker Image (Resilient Retry)
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.jvm
           build-args: |
-            SERVICE=${{ matrix.service }}
+            SERVICE=${{ env.SERVICE_NAME }}
           platforms: linux/amd64
           push: ${{ env.DOCKER_PASSWORD != '' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -110,7 +97,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # =========================================================================
-  # 3. DEPLOY TO RENDER (Automated Trigger with Exponential Backoff)
+  # 3. DEPLOY TO RENDER
   # =========================================================================
   deploy-to-render:
     name: Trigger Render Deployment
@@ -118,77 +105,48 @@ jobs:
     if: github.event_name == 'push' || github.event.inputs.deploy_to_render == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Render via API or Deploy Hooks
+      - name: Deploy to Render
         env:
           RENDER_API_KEY: ${{ env.RENDER_API_KEY }}
-          RENDER_DEPLOY_HOOK_GATEWAY: ${{ secrets.RENDER_DEPLOY_HOOK_GATEWAY }}
-          RENDER_DEPLOY_HOOK_AUTH: ${{ secrets.RENDER_DEPLOY_HOOK_AUTH }}
-          RENDER_DEPLOY_HOOK_SALA: ${{ secrets.RENDER_DEPLOY_HOOK_SALA }}
-          RENDER_DEPLOY_HOOK_CARTELA: ${{ secrets.RENDER_DEPLOY_HOOK_CARTELA }}
-          RENDER_DEPLOY_HOOK_ALL: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_AUTH || secrets.RENDER_DEPLOY_HOOK }}
         run: |
           echo "=========================================================="
-          echo " Initiating Resilient Render Deployment Trigger"
+          echo " Acionando Deploy no Render com Resiliência"
           echo "=========================================================="
 
-          # Function to trigger webhook with retry mechanism
-          trigger_hook() {
-            local name=$1
-            local url=$2
-            if [ -n "$url" ]; then
-              echo "Deploying $name via Deploy Hook..."
-              local attempt=1
-              local max_attempts=4
-              local success=0
-              while [ $attempt -le $max_attempts ]; do
-                echo "Attempt $attempt of $max_attempts for $name..."
-                response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$url" || true)
-                http_code=$(echo "$response" | grep "HTTP_STATUS" | cut -d':' -f2)
-                if [ "$http_code" = "200" ] || [ "$http_code" = "201" ] || [ "$http_code" = "202" ]; then
-                  echo "SUCCESS: $name deployed successfully (HTTP $http_code)"
-                  success=1
-                  break
-                else
-                  echo "WARNING: Attempt $attempt failed with status $http_code. Retrying in $((attempt * 5))s..."
-                  sleep $((attempt * 5))
-                  attempt=$((attempt + 1))
-                fi
-              done
-              if [ $success -eq 0 ]; then
-                echo "ERROR: Failed to deploy $name after $max_attempts attempts."
+          # 1. Se houver Deploy Hook URL
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Disparando Deploy Hook..."
+            attempt=1
+            max_attempts=3
+            while [ $attempt -le $max_attempts ]; do
+              echo "Tentativa $attempt de $max_attempts..."
+              status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$RENDER_DEPLOY_HOOK" || true)
+              if [ "$status" = "200" ] || [ "$status" = "201" ] || [ "$status" = "202" ]; then
+                echo "Deploy iniciado com sucesso no Render (HTTP $status)"
+                break
+              else
+                echo "Aviso: Tentativa falhou com status $status. Aguardando 5s..."
+                sleep 5
+                attempt=$((attempt + 1))
               fi
-            fi
-          }
+            done
+          fi
 
-          # 1. Trigger service hooks if configured
-          trigger_hook "Gateway Service" "$RENDER_DEPLOY_HOOK_GATEWAY"
-          trigger_hook "Auth Service" "$RENDER_DEPLOY_HOOK_AUTH"
-          trigger_hook "Bingo Sala Service" "$RENDER_DEPLOY_HOOK_SALA"
-          trigger_hook "Cartela Service" "$RENDER_DEPLOY_HOOK_CARTELA"
-          trigger_hook "Global Render Service" "$RENDER_DEPLOY_HOOK_ALL"
-
-          # 2. If Render API Key is present, list and trigger deploys for discovered services
+          # 2. Se houver RENDER_API_KEY
           if [ -n "$RENDER_API_KEY" ]; then
-            echo "Checking Render REST API for active services..."
-            services_response=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" "https://api.render.com/v1/services?limit=20" || true)
+            echo "Consultando Render REST API..."
+            services_json=$(curl -s -H "Authorization: Bearer $RENDER_API_KEY" "https://api.render.com/v1/services?limit=10" || true)
+            service_id=$(echo "$services_json" | grep -o '"id":"srv-[^"]*"' | head -n 1 | cut -d'"' -f4 || true)
             
-            # Extract service IDs if available
-            service_ids=$(echo "$services_response" | grep -o '"id":"srv-[^"]*"' | cut -d'"' -f4 | sort -u || true)
-            
-            if [ -n "$service_ids" ]; then
-              echo "Discovered Render services:"
-              for srv in $service_ids; do
-                echo "Triggering deploy for service $srv..."
-                deploy_resp=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-                  -H "Authorization: Bearer $RENDER_API_KEY" \
-                  -H "Content-Type: application/json" \
-                  -d '{"clearCache": "clear"}' \
-                  "https://api.render.com/v1/services/$srv/deploys" || true)
-                echo "$deploy_resp"
-              done
-            else
-              echo "No service IDs automatically matched or API returned non-JSON. Deploy hooks or dashboard sync will handle updates."
+            if [ -n "$service_id" ]; then
+              echo "Disparando deploy para servico Render $service_id..."
+              curl -s -X POST \
+                -H "Authorization: Bearer $RENDER_API_KEY" \
+                -H "Content-Type: application/json" \
+                -d '{"clearCache": "clear"}' \
+                "https://api.render.com/v1/services/$service_id/deploys"
             fi
           fi
 
-          echo "Render deployment trigger step completed successfully."
+          echo "Processo de deploy finalizado."

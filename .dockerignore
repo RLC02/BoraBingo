@@ -1,0 +1,8 @@
+.git
+.vscode
+.DS_Store
+**/target
+frontend
+*.sh
+*.md
+k6-test-concorrencia.js

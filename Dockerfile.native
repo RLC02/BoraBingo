@@ -1,0 +1,18 @@
+# Imagem nativa GraalVM (compila com GraalVM, roda em Debian slim).
+# Uso: docker build -f Dockerfile.native --build-arg SERVICE=auth-service -t bingo/auth-service:native .
+# O build nativo precisa de ~8 GB de RAM liberados para o Docker.
+
+FROM ghcr.io/graalvm/native-image-community:21 AS build
+ARG SERVICE
+ARG MAVEN_VERSION=3.9.9
+RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+    | tar -xz -C /opt && ln -s /opt/apache-maven-${MAVEN_VERSION}/bin/mvn /usr/local/bin/mvn
+WORKDIR /build
+COPY . .
+RUN mvn -q -B -Pnative -DskipTests -pl ${SERVICE} -am clean package
+
+FROM debian:bookworm-slim
+ARG SERVICE
+WORKDIR /app
+COPY --from=build /build/${SERVICE}/target/${SERVICE} app
+ENTRYPOINT ["./app"]

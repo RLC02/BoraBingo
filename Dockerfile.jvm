@@ -1,0 +1,18 @@
+# Imagem JVM com recursos mínimos.
+# Uso: docker build -f Dockerfile.jvm --build-arg SERVICE=auth-service -t bingo/auth-service:jvm .
+
+FROM maven:3.9-eclipse-temurin-17 AS build
+ARG SERVICE
+WORKDIR /build
+COPY . .
+RUN mvn -q -B -DskipTests -pl ${SERVICE} -am clean package
+
+FROM eclipse-temurin:17-jre
+ARG SERVICE
+WORKDIR /app
+COPY --from=build /build/${SERVICE}/target/${SERVICE}-1.0.0.jar app.jar
+
+# SerialGC, heap e metaspace pequenos, stack reduzida e só o compilador C1 (JIT leve)
+ENV JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -Xms32m -Xmx128m -XX:MaxMetaspaceSize=96m -Xss256k -XX:ReservedCodeCacheSize=32m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError"
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

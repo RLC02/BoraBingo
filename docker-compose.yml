@@ -1,3 +1,22 @@
+# ---------------------------------------------------------------------------
+# Aplicações. Suba UMA variante por vez (as duas usam as mesmas portas):
+#   docker-compose --profile jvm    up --build
+#   docker-compose --profile native up --build
+# Ambas com os mesmos limites (256 MB / 0.5 CPU) para comparar consumo.
+# ---------------------------------------------------------------------------
+x-app: &app
+  restart: unless-stopped
+  mem_limit: 256m
+  cpus: 0.5
+  depends_on:
+    mongo-init-replica:
+      condition: service_completed_successfully
+    rabbitmq:
+      condition: service_healthy
+
+x-mongo-uri: &mongo-uri mongodb://mongodb:27017/bingo_db?replicaSet=rs0&directConnection=true
+
+
 services:
   mongodb:
     image: mongo:6.0
@@ -55,6 +74,171 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  gateway-jvm:
+    <<: *app
+    profiles: ["jvm"]
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        SERVICE: gateway-service
+    image: bingo/gateway-service:jvm
+    container_name: bingo-gateway-service-jvm
+    hostname: gateway-service
+    networks:
+      default:
+        aliases: [gateway-service]
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://auth-service:8081
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://bingo-sala-service:8082
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://cartela-service:8083
+
+  gateway-native:
+    <<: *app
+    profiles: ["native"]
+    build:
+      context: .
+      dockerfile: Dockerfile.native
+      args:
+        SERVICE: gateway-service
+    image: bingo/gateway-service:native
+    container_name: bingo-gateway-service-native
+    hostname: gateway-service
+    networks:
+      default:
+        aliases: [gateway-service]
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://auth-service:8081
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://bingo-sala-service:8082
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://cartela-service:8083
+
+  auth-jvm:
+    <<: *app
+    profiles: ["jvm"]
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        SERVICE: auth-service
+    image: bingo/auth-service:jvm
+    container_name: bingo-auth-service-jvm
+    hostname: auth-service
+    networks:
+      default:
+        aliases: [auth-service]
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_MONGODB_URI: *mongo-uri
+
+  auth-native:
+    <<: *app
+    profiles: ["native"]
+    build:
+      context: .
+      dockerfile: Dockerfile.native
+      args:
+        SERVICE: auth-service
+    image: bingo/auth-service:native
+    container_name: bingo-auth-service-native
+    hostname: auth-service
+    networks:
+      default:
+        aliases: [auth-service]
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_MONGODB_URI: *mongo-uri
+
+  sala-jvm:
+    <<: *app
+    profiles: ["jvm"]
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        SERVICE: bingo-sala-service
+    image: bingo/bingo-sala-service:jvm
+    container_name: bingo-bingo-sala-service-jvm
+    hostname: bingo-sala-service
+    networks:
+      default:
+        aliases: [bingo-sala-service]
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_MONGODB_URI: *mongo-uri
+      SPRING_RABBITMQ_HOST: rabbitmq
+
+  sala-native:
+    <<: *app
+    profiles: ["native"]
+    build:
+      context: .
+      dockerfile: Dockerfile.native
+      args:
+        SERVICE: bingo-sala-service
+    image: bingo/bingo-sala-service:native
+    container_name: bingo-bingo-sala-service-native
+    hostname: bingo-sala-service
+    networks:
+      default:
+        aliases: [bingo-sala-service]
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_MONGODB_URI: *mongo-uri
+      SPRING_RABBITMQ_HOST: rabbitmq
+
+  cartela-jvm:
+    <<: *app
+    profiles: ["jvm"]
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        SERVICE: cartela-service
+    image: bingo/cartela-service:jvm
+    container_name: bingo-cartela-service-jvm
+    hostname: cartela-service
+    networks:
+      default:
+        aliases: [cartela-service]
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATA_MONGODB_URI: *mongo-uri
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SERVICES_SALA_URL: http://bingo-sala-service:8082/api/salas
+      SERVICES_AUTH_URL: http://auth-service:8081/api/auth
+
+  cartela-native:
+    <<: *app
+    profiles: ["native"]
+    build:
+      context: .
+      dockerfile: Dockerfile.native
+      args:
+        SERVICE: cartela-service
+    image: bingo/cartela-service:native
+    container_name: bingo-cartela-service-native
+    hostname: cartela-service
+    networks:
+      default:
+        aliases: [cartela-service]
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATA_MONGODB_URI: *mongo-uri
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SERVICES_SALA_URL: http://bingo-sala-service:8082/api/salas
+      SERVICES_AUTH_URL: http://auth-service:8081/api/auth
+
 
 volumes:
   mongo_data:

@@ -76,4 +76,30 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Build nativo: mvn -Pnative -DskipTests clean package (requer GraalVM com native-image) -->
+        <profile>
+            <id>native</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.graalvm.buildtools</groupId>
+                            <artifactId>native-maven-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>build-native</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>compile-no-fork</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>

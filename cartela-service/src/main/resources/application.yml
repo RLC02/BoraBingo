@@ -6,7 +6,7 @@ spring:
     name: cartela-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/bingo_db?replicaSet=rs0
+      uri: mongodb://localhost:27017/bingo_db?replicaSet=rs0&directConnection=true
   rabbitmq:
     host: localhost
     port: 5672

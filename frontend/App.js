@@ -316,6 +316,15 @@ export default function App() {
     } catch (e) { console.error('Erro ao carregar salas:', e); }
   };
 
+  const limparSalas = async () => {
+    try {
+      const res = await api.delete('/salas/admin/limpar');
+      showToast(`${res.data.total} salas removidas com sucesso!`, 'success');
+      setSelectedSala(null);
+      carregarSalas();
+    } catch (e) { showToast(e.response?.data?.error || 'Erro ao limpar salas', 'error'); }
+  };
+
   const criarSalaAdmin = async () => {
     if (!novaSalaNome) return showToast('Digite o nome da sala', 'warn');
     try {
@@ -489,21 +498,7 @@ export default function App() {
             onChangeText={setPassword}
           />
 
-          {isRegistering && (
-            <View style={ss.roleRow}>
-              <Text style={ss.roleLabel}>Perfil:</Text>
-              <TouchableOpacity
-                style={[ss.roleChip, role === 'ROLE_USER' && ss.roleChipActive]}
-                onPress={() => setRole('ROLE_USER')}>
-                <Text style={role === 'ROLE_USER' ? ss.roleChipTextActive : ss.roleChipText}>Jogador</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[ss.roleChip, role === 'ROLE_ADMIN' && ss.roleChipActive]}
-                onPress={() => setRole('ROLE_ADMIN')}>
-                <Text style={role === 'ROLE_ADMIN' ? ss.roleChipTextActive : ss.roleChipText}>Admin</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Perfil fixado como ROLE_USER no cadastro público — admin criado apenas internamente */}
 
           <TouchableOpacity
             style={ss.btnPrimary}
@@ -589,6 +584,11 @@ export default function App() {
                 <Text style={ss.btnLimeText}>+ Criar Sala</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={[ss.btnLime, { backgroundColor: '#e53e3e', marginTop: 10, alignSelf: 'flex-start' }]}
+              onPress={limparSalas}>
+              <Text style={ss.btnLimeText}>🗑 Limpar Todas as Salas</Text>
+            </TouchableOpacity>
           </View>
         )}
 
